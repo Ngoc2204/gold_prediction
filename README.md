@@ -11,3 +11,13 @@ Công nghệ sử dụng
 Html
 CSS
 Python
+
+Thuật toán: 
+
+1. Random Forest
+
+2. XGBoost
+
+3. Gradient Boosting
+
+4. Linear Regression
