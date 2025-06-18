@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống dự đoán giá vàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content-section {
+            padding: 30px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 20px;
+        }
+        
+        .card-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(17, 153, 142, 0.4);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+            color: white;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+        
+        .prediction-result {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .prediction-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .model-predictions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .model-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .model-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+        
+        .model-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner-border {
+            color: #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        /* 7-day forecast styles */
+        .forecast-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .forecast-day {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .forecast-day:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .forecast-date {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .forecast-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .forecast-change {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .forecast-change.positive {
+            background: rgba(56, 239, 125, 0.3);
+        }
+        
+        .forecast-change.negative {
+            background: rgba(255, 75, 43, 0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content-section {
+                padding: 20px;
+            }
+            
+            .prediction-value {
+                font-size: 2rem;
+            }
+            
+            .forecast-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 10px;
+            }
+        }
+
+                .control-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .control-buttons .btn {
+            flex: 1 1 calc(25% - 10px); /* 4 nút trên 1 hàng với khoảng cách */
+            min-width: 150px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-coins"></i> Hệ thống dự đoán giá vàng</h1>
+                <p>Sử dụng Machine Learning và phân tích chuỗi thời gian để dự đoán giá vàng</p>
+            </div>
+
+            <!-- Content -->
+            <div class="content-section">
+                <!-- Control Panel -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-cogs"></i> Bảng điều khiển</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="control-buttons mb-3">
+                            <button class="btn btn-primary btn-lg" onclick="trainModel()">
+                                <i class="fas fa-brain"></i> Huấn luyện
+                            </button>
+                            <button class="btn btn-success btn-lg" onclick="makePrediction()">
+                                <i class="fas fa-chart-line"></i> Dự đoán hiện tại
+                            </button>
+                            <button class="btn btn-warning btn-lg" onclick="getForecast()">
+                                <i class="fas fa-calendar-week"></i> Dự đoán 7 ngày
+                            </button>
+                            <button class="btn btn-info btn-lg" onclick="getDataInfo()">
+                                <i class="fas fa-info-circle"></i> Thông tin
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang xử lý...</span>
+                    </div>
+                    <p class="mt-3">Đang xử lý, vui lòng đợi...</p>
+                </div>
+
+                <!-- Messages -->
+                <div id="messages"></div>
+
+                <!-- Prediction Results -->
+                <div id="predictionResults" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-crystal-ball"></i> Kết quả dự đoán</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="prediction-result">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Giá hiện tại</h5>
+                                        <div class="prediction-value" id="currentPrice">$0.000</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>Dự đoán Ensemble</h5>
+                                        <div class="prediction-value" id="ensemblePrediction">$0.000</div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <small id="predictionDate">Cập nhật: </small>
+                                </div>
+                            </div>
+                            
+                            <div class="model-predictions" id="modelPredictions">
+                                <!-- Model predictions will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7-Day Forecast Results -->
+                <div id="forecastResults" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-calendar-week"></i> Dự đoán 7 ngày tới</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="forecast-container">
+                                <div class="text-center mb-3">
+                                    <h5><i class="fas fa-chart-line"></i> Xu hướng giá vàng 7 ngày tới</h5>
+                                    <p class="mb-0 opacity-75">Dự đoán dựa trên mô hình Ensemble</p>
+                                </div>
+                                <div class="forecast-grid" id="forecastGrid">
+                                    <!-- 7-day forecast will be inserted here -->
+                                </div>
+                                <div class="mt-3 text-center">
+                                    <small id="forecastDate" class="opacity-75">Cập nhật: </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Information -->
+                <div id="dataInfo" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-database"></i> Thông tin dữ liệu</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid" id="statsGrid">
+                                <!-- Stats will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-info"></i> Về hệ thống</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-chart-area"></i> Dữ liệu sử dụng</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-coins text-warning"></i> Giá vàng (GLD ETF)</li>
+                                    <li><i class="fas fa-dollar-sign text-success"></i> Chỉ số USD (DXY)</li>
+                                    <li><i class="fas fa-oil-can text-dark"></i> Giá dầu WTI</li>
+                                    <li><i class="fas fa-chart-line text-primary"></i> S&P 500</li>
+                                    <li><i class="fas fa-percentage text-info"></i> Lãi suất 10 năm</li>
+                                    <li><i class="fas fa-exclamation-triangle text-danger"></i> VIX</li>
+                                    <li><i class="fab fa-bitcoin text-warning"></i> Bitcoin</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-robot"></i> Mô hình sử dụng</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-tree text-success"></i> Random Forest</li>
+                                    <li><i class="fas fa-rocket text-primary"></i> XGBoost</li>
+                                    <li><i class="fas fa-chart-bar text-info"></i> Gradient Boosting</li>
+                                    <li><i class="fas fa-ruler text-secondary"></i> Linear Regression</li>
+                                    <li><i class="fas fa-layer-group text-warning"></i> Ensemble Model</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5><i class="fas fa-cog"></i> Đặc trưng kỹ thuật</h5>
+                            <p class="text-muted">
+                                Hệ thống tự động tạo ra hơn 50 đặc trưng kỹ thuật bao gồm: Moving Averages, 
+                                RSI, Bollinger Bands, Volatility, Returns, Lag features, và Time features.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                
+                <p><small class="text-muted">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Lưu ý: Kết quả dự đoán chỉ mang tính chất tham khảo, không phải lời khuyên đầu tư.
+                </small></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showMessage(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-danger' : 
+                             type === 'success' ? 'alert-success' : 'alert-info';
+            
+            const messageHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 
+                                    type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.getElementById('messages').innerHTML = messageHtml;
+        }
+
+        function trainModel() {
+            showLoading();
+            
+            fetch('/train', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.status === 'success') {
+                    showMessage(`
+                        <strong>Huấn luyện thành công!</strong><br>
+                        - Số điểm dữ liệu: ${data.data_points}<br>
+                        - Số đặc trưng: ${data.features}<br>
+                        - Mô hình đã được lưu và sẵn sàng dự đoán
+                    `, 'success');
+                } else {
+                    showMessage(`<strong>Lỗi:</strong> ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage(`<strong>Lỗi kết nối:</strong> ${error.message}`, 'error');
+            });
+        }
+
+        function makePrediction() {
+            showLoading();
+            
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.status === 'success') {
+                    displayPredictions(data);
+                    showMessage('Dự đoán thành công!', 'success');
+                } else {
+                    showMessage(`<strong>Lỗi:</strong> ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage(`<strong>Lỗi kết nối:</strong> ${error.message}`, 'error');
+            });
+        }
+
+        function getForecast() {
+            showLoading();
+            
+            fetch('/predict_7days', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.status === 'success') {
+                    displayForecast(data);
+                    showMessage('Dự đoán 7 ngày thành công!', 'success');
+                } else {
+                    showMessage(`<strong>Lỗi:</strong> ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage(`<strong>Lỗi kết nối:</strong> ${error.message}`, 'error');
+            });
+        }
+
+        function displayPredictions(data) {
+            document.getElementById('predictionResults').style.display = 'block';
+            document.getElementById('currentPrice').textContent = `${data.current_price.toFixed(2)}`;
+            document.getElementById('ensemblePrediction').textContent = `${data.predictions.Ensemble.toFixed(2)}`;
+            document.getElementById('predictionDate').textContent = `Cập nhật: ${data.date}`;
+            
+            // Display individual model predictions
+            const modelPredictions = document.getElementById('modelPredictions');
+            modelPredictions.innerHTML = '';
+            
+            const modelNames = {
+                'RandomForest': 'Random Forest',
+                'XGBoost': 'XGBoost',
+                'GradientBoosting': 'Gradient Boosting',
+                'LinearRegression': 'Linear Regression'
+            };
+            
+            for (const [model, prediction] of Object.entries(data.predictions)) {
+                if (model !== 'Ensemble') {
+                    const modelCard = document.createElement('div');
+                    modelCard.className = 'model-card';
+                    modelCard.innerHTML = `
+                        <div class="model-name">${modelNames[model] || model}</div>
+                        <div class="model-value">${prediction.toFixed(2)}</div>
+                    `;
+                    modelPredictions.appendChild(modelCard);
+                }
+            }
+        }
+
+        function displayForecast(data) {
+            document.getElementById('forecastResults').style.display = 'block';
+            document.getElementById('forecastDate').textContent = `Cập nhật: ${data.timestamp}`;
+            
+            const forecastGrid = document.getElementById('forecastGrid');
+            forecastGrid.innerHTML = '';
+            
+            const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+            const forecastData = data.predictions_7days;
+            const dates = forecastData.dates;
+            const prices = forecastData.predictions.Ensemble;
+
+            dates.forEach((dateStr, index) => {
+                const date = new Date(dateStr);
+                const dayName = dayNames[date.getDay()];
+                const dateLabel = `${date.getDate()}/${date.getMonth() + 1}`;
+                
+                const price = prices[index];
+                const prevPrice = index === 0 ? forecastData.current_price : prices[index - 1];
+                const change = ((price - prevPrice) / prevPrice) * 100;
+                const changeClass = change > 0 ? 'positive' : change < 0 ? 'negative' : '';
+                const changeIcon = change > 0 ? '▲' : change < 0 ? '▼' : '−';
+
+                const forecastDay = document.createElement('div');
+                forecastDay.className = 'forecast-day';
+                forecastDay.innerHTML = `
+                    <div class="forecast-date">${dayName}<br>${dateLabel}</div>
+                    <div class="forecast-price">$${price.toFixed(2)}</div>
+                    <div class="forecast-change ${changeClass}">
+                        ${changeIcon} ${Math.abs(change).toFixed(1)}%
+                    </div>
+                `;
+                forecastGrid.appendChild(forecastDay);
+            });
+        }
+
+
+        function getDataInfo() {
+            showLoading();
+            
+            fetch('/data_info')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.status === 'success') {
+                    displayDataInfo(data.stats);
+                    showMessage('Thông tin dữ liệu đã được cập nhật!', 'success');
+                } else {
+                    showMessage(`<strong>Lỗi:</strong> ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage(`<strong>Lỗi kết nối:</strong> ${error.message}`, 'error');
+            });
+        }
+
+        function displayDataInfo(stats) {
+            document.getElementById('dataInfo').style.display = 'block';
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-value">${stats.total_records}</span>
+                    <div class="stat-label">Tổng số bản ghi</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${stats.current_price.toFixed(2)}</span>
+                    <div class="stat-label">Giá hiện tại</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${stats.price_change_1d > 0 ? '+' : ''}${stats.price_change_1d.toFixed(2)}</span>
+                    <div class="stat-label">Thay đổi 1 ngày</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${stats.features_count}</span>
+                    <div class="stat-label">Số đặc trưng</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${stats.date_range.start}</span>
+                    <div class="stat-label">Từ ngày</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${stats.date_range.end}</span>
+                    <div class="stat-label">Đến ngày</div>
+                </div>
+            `;
+        }
+
+        // Auto-refresh data info every 5 minutes
+        setInterval(function() {
+            if (document.getElementById('dataInfo').style.display !== 'none') {
+                getDataInfo();
+            }
+        }, 300000);
+
+        // Welcome message
+        window.addEventListener('load', function() {
+            showMessage(`
+                <strong>Chào mừng đến với Hệ thống dự đoán giá vàng!</strong><br>
+                Bắt đầu bằng cách huấn luyện mô hình với dữ liệu mới nhất.
+            `, 'info');
+        });
+    </script>
+</body>
+</html>
